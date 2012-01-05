@@ -9,7 +9,11 @@ Gem::Specification::new do |spec|
   spec.description = "description: rails_current kicks the ass"
 
   spec.files =
-["Rakefile", "lib", "lib/rails_current.rb"]
+["README.md",
+ "Rakefile",
+ "lib",
+ "lib/rails_current.rb",
+ "rails_current.gemspec"]
 
   spec.executables = []
   

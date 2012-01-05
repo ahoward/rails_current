@@ -2,23 +2,52 @@
 NAME
 --------------------------------
   rails_current
-         
+
+--------------------------------
+DESCRIPTION
+--------------------------------
+
+  track 'current_user' et all in a tidy, global, and thread-safe fashion.
 
 
 --------------------------------
 SYNOPSIS
 --------------------------------
-  most rails apps scatter a bunch of @currentfoobar vars everywhere.  don't do
-  that.  do
+  most rails apps scatter a bunch of @current_foobar vars everywhere.  don't do
+  that.  it's fugly.  instead, do this.
 
-    Current.user = ...
+    class ApplicationController
 
-    if Current.user
+      Current(:user){ User.find session[:current_user }
+      Current(:account)
 
-    if Current.account
+      include Current
+
+    end
+
+    ...
+
+
+    if current_user
+
+      ...
+
+    end
+
+
+    self.current_account = Account.find(id)
+
 
   etc.
 
   out of the box it's loaded with Current.controller
 
+--------------------------------
+INSTALL
+--------------------------------
+
+   gem install rails-current
+
+
    gem 'rails-current', :require => 'current'
+   bundle install

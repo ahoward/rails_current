@@ -1,31 +1,87 @@
-require 'fattr'
+require 'map'
 
 module Current
-  def Current.version() '1.0.0' end
+  def Current.version() '1.1.0' end
 
-  def Current.attribute(name, *args, &block)
-    name = name.to_s
-    attribute_names.push(name) unless attribute?(name)
-    Fattr(name, *args, &block)
-  end
-
-  def Current.attribute?(name)
-    attribute_names.include?(name.to_s)
-  end
-
-  def Current.attribute_names
-    @attribute_names ||= []
-  end
-
-  def Current.attributes
-    attribute_names.inject({}){|hash, name| hash.update(name => send(name))}
+  def Current.data
+    Thread.current[:current] ||= Map.new
   end
 
   def Current.clear
-    attribute_names.each do |name|
-      ivar = "@#{ name }"
-      remove_instance_variable(ivar) if instance_variable_defined?(ivar)
+    data.clear
+    self
+  end
+
+  def Current.reset
+    calls.keys.each{|name, block| undefine_attribute_method(name) }
+    data.clear
+    calls.clear
+    self
+  end
+
+  def Current.attribute(name, *args, &block)
+    options = Map.options_for(args)
+
+    name = name.to_s
+    default = options.has_key?(:default) ? options[:default] : args.shift
+
+    block ||= proc{ default }
+    calls[name] = block
+
+    define_attribute_method(name)
+    self
+  end
+
+  def Current.calls
+    @calls ||= Map.new
+  end
+
+  def Current.define_attribute_method(name)
+    unless respond_to?(name)
+      singleton_class.module_eval do
+        define_method(name) do
+          if data.has_key?(name)
+            data[name]
+          else
+            data[name] = calls[name].call
+          end
+        end
+
+        define_method(name + '=') do |value|
+          data[name] = value
+        end
+
+        define_method(name + '?') do |value|
+          data[name]
+        end
+      end
     end
+  end
+
+  def Current.undefine_attribute_method(name)
+    if respond_to?(name)
+      singleton_class.module_eval do
+        remove_method(name)
+        remove_method(name + '=')
+        remove_method(name + '?')
+      end
+    end
+  end
+
+  def Current.singleton_class
+    @singleton_class ||= class << self; self; end
+  end
+
+  def Current.attribute?(name)
+    calls.has_key?(name)
+  end
+
+  def Current.attribute_names
+    calls.keys
+  end
+
+  def Current.attributes
+    attribute_names.inject(Map.new){|map, name| map.update(name => send(name))}
   end
 
   def Current.method_missing(method, *args, &block)
