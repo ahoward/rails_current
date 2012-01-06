@@ -1,8 +1,10 @@
+# -*- encoding : utf-8 -*-
+
 require 'map'
 
 module Current
   def Current.version
-    '1.2.0'
+    '1.2.1'
   end
 
   def Current.data
