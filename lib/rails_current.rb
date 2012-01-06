@@ -1,7 +1,9 @@
 require 'map'
 
 module Current
-  def Current.version() '1.1.0' end
+  def Current.version
+    '1.2.0'
+  end
 
   def Current.data
     Thread.current[:current] ||= Map.new
@@ -51,8 +53,8 @@ module Current
           data[name] = value
         end
 
-        define_method(name + '?') do |value|
-          data[name]
+        define_method(name + '?') do |*args|
+          send(name)
         end
       end
     end
@@ -106,28 +108,14 @@ module Current
     end
   end
 
-  Code = proc do
-    def method_missing(method, *args, &block)
-      case method.to_s
-        when /^current_(.*)$/
-          msg = $1
-          Current.send(msg, *args, &block)
-        else
-          super
-      end
+  def method_missing(method, *args, &block)
+    case method.to_s
+      when /^current_(.*)$/
+        msg = $1
+        Current.send(msg, *args, &block)
+      else
+        super
     end
-  end
-
-  def Current.included(other)
-    super
-  ensure
-    other.send(:module_eval, &Code)
-  end
-
-  def Current.extend_object(object)
-    super
-  ensure
-    object.send(:instance_eval, &Code)
   end
 end
 
@@ -147,7 +135,7 @@ if defined?(Rails)
           Current.clear
           Current.controller = controller
         end
-      end
+      end if defined?(::ActionController::Base)
     end
   end
 
@@ -157,8 +145,16 @@ if defined?(Rails)
         Current.install_before_filter!
       end
     end
+  else
+    Current.install_before_filter!
   end
 
 end
 
-Rails_current = Current
+::Rails_current = ::Current
+
+BEGIN {
+  Object.send(:remove_const, :Current) if defined?(::Current)
+  Object.send(:remove_const, :Rails_current) if defined?(::Rails_current)
+}
+

@@ -3,7 +3,7 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_current"
-  spec.version = "1.0.0"
+  spec.version = "1.1.0"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
   spec.description = "description: rails_current kicks the ass"
@@ -13,7 +13,10 @@ Gem::Specification::new do |spec|
  "Rakefile",
  "lib",
  "lib/rails_current.rb",
- "rails_current.gemspec"]
+ "rails_current.gemspec",
+ "test",
+ "test/rails_current_test.rb",
+ "test/testing.rb"]
 
   spec.executables = []
   

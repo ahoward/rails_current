@@ -114,17 +114,98 @@ Testing Current do
 
 ##
 #
+  test 'that assigning to Current dynamically adds accessor methods' do
+    assert{ Current.foo = 42 }
+    assert{ Current.foo == 42 }
+
+    assert{ Current.bar = 'forty-two' }
+    assert{ Current.bar == 'forty-two' }
+  end
+
+##
+#
+  test 'that query methods on Current werky' do
+    assert{ Current.foo?.nil? }
+    assert{ Current.foo = 42 }
+    assert{ Current.foo? == 42 }
+  end
+
+##
+#
+  test 'that loading Current into a rails app creates Current.user and Current.controller' do
+    mock_rails! do
+      assert{ Current.attributes =~ {:user => nil, :controller => nil} }
+    end
+
+    mock_rails_engine! do
+      assert{ Current.attributes =~ {:user => nil, :controller => nil} }
+      assert{ $before_initialize_called }
+      assert{ $before_filter_called }
+    end
+  end
+
+##
+#
   teardown do
     assert{ Current.reset }
   end
 
+
+private
+  def mock_rails!
+    Object.module_eval <<-__
+      module Rails
+      end
+    __
+    $load.call()
+    yield
+    Object.send(:remove_const, :Rails)
+  end
+
+  def mock_rails_engine!
+    Object.module_eval <<-__
+      module Rails
+        class Engine
+          def Engine.config
+            Config
+          end
+
+          class Config
+            def Config.before_initialize(*args, &block)
+              block.call
+            ensure
+              $before_initialize_called = true
+            end
+          end
+        end
+      end
+
+      module ActionController
+        class Base
+          def Base.before_filter(*args, &block)
+            block.call()
+          ensure
+            $before_filter_called = true
+          end
+        end
+      end
+    __
+    $load.call()
+    yield
+    Object.send(:remove_const, :Rails)
+  end
 end
 
 
 BEGIN {
-  this = File.expand_path(__FILE__)
-  root = File.dirname(File.dirname(this))
+  $this = File.expand_path(__FILE__)
+  $root = File.dirname(File.dirname($this))
 
-  require(File.join(root, 'lib/rails_current.rb'))
-  require(File.join(root, 'test/testing.rb'))
+  (
+    $load =
+      proc do
+        Kernel.load(File.join($root, 'lib/rails_current.rb'))
+        Kernel.load(File.join($root, 'test/testing.rb'))
+      end
+  ).call()
 }
