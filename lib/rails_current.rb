@@ -4,7 +4,7 @@ require 'map'
 
 module Current
   def Current.version
-    '1.2.1'
+    '1.3.0'
   end
 
   def Current.data
@@ -125,6 +125,7 @@ def Current(*args, &block)
   Current.attribute(*args, &block)
 end
 
+
 if defined?(Rails)
 
   module Current
@@ -133,7 +134,7 @@ if defined?(Rails)
 
     def Current.install_before_filter!
       ::ActionController::Base.module_eval do
-        before_filter do |controller|
+        prepend_before_filter do |controller|
           Current.clear
           Current.controller = controller
         end
@@ -144,7 +145,9 @@ if defined?(Rails)
   if defined?(Rails::Engine)
     class Engine < Rails::Engine
       config.before_initialize do
-        Current.install_before_filter!
+        ActiveSupport.on_load(:action_controller) do
+          Current.install_before_filter!
+        end
       end
     end
   else
@@ -152,6 +155,7 @@ if defined?(Rails)
   end
 
 end
+
 
 ::Rails_current = ::Current
 
