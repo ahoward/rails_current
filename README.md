@@ -13,20 +13,38 @@ DESCRIPTION
 --------------------------------
 SYNOPSIS
 --------------------------------
+
   most rails apps scatter a bunch of @current_foobar vars everywhere.  don't do
   that.  it's fugly.  instead, do this.
+
+  declare the current_XXX variables you'll want tracked.  you can pass a block
+  for lazy computation
 
     class ApplicationController
 
       Current(:user){ User.find session[:current_user }
       Current(:account)
 
-      include Current
+    end
+
+  you can now access the current state two ways
+  
+
+  1) globally from anywhere in your code base
+  
+
+    if Current.user
+
+      ...
 
     end
 
-    ...
+    Current.user = User.find(id)
 
+  2) or using the current_ methods that are added by including the Current
+  module into any class (ActionController::Base and ActionView::Base
+  automatically include it)
+  
 
     if current_user
 
@@ -34,13 +52,10 @@ SYNOPSIS
 
     end
 
+    self.current_user = User.find(id)
 
-    self.current_account = Account.find(id)
 
-
-  etc.
-
-  out of the box it's loaded with Current.controller
+  the Current module is cleared out before every request and is thread safe.
 
 --------------------------------
 INSTALL

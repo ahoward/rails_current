@@ -4,7 +4,7 @@ require 'map'
 
 module Current
   def Current.version
-    '1.3.0'
+    '1.4.0'
   end
 
   def Current.data
@@ -17,27 +17,45 @@ module Current
   end
 
   def Current.reset
-    calls.keys.each{|name, block| undefine_attribute_method(name) }
-    data.clear
-    calls.clear
-    self
+    attribute_names.each{|name| undefine_attribute_method(name)}
+    attribute_names.clear
+    generators.clear
+    clear
+  end
+
+  def Current.generators
+    @generators ||= Map.new
   end
 
   def Current.attribute(name, *args, &block)
-    options = Map.options_for(args)
+    options = Map.options_for!(args)
 
     name = name.to_s
-    default = options.has_key?(:default) ? options[:default] : args.shift
 
-    block ||= proc{ default }
-    calls[name] = block
+    attribute_names.push(name)
+    attribute_names.uniq!
+
+    if options.has_key?(:default)
+      default = options[:default]
+      if default.respond_to?(:call)
+        block ||= default
+      else
+        data[name] = default
+      end
+    end
+
+    if !args.empty?
+      value = args.shift
+      data[name] = value
+    end
+
+    if block
+      generators[name] = block
+    end
 
     define_attribute_method(name)
-    self
-  end
 
-  def Current.calls
-    @calls ||= Map.new
+    self
   end
 
   def Current.define_attribute_method(name)
@@ -47,7 +65,10 @@ module Current
           if data.has_key?(name)
             data[name]
           else
-            data[name] = calls[name].call
+            if generator = generators[name]
+              value = generator.call
+              data[name] = value
+            end
           end
         end
 
@@ -77,11 +98,11 @@ module Current
   end
 
   def Current.attribute?(name)
-    calls.has_key?(name)
+    attribute_names.include?(name.to_s)
   end
 
   def Current.attribute_names
-    calls.keys
+    @attribute_names ||= []
   end
 
   def Current.attributes
@@ -93,7 +114,7 @@ module Current
       when /^(.*)[=]$/
         name = $1
         value = args.shift
-        attribute(name){ value }
+        attribute(name, value)
         value
 
       when /^(.*)[?]$/
@@ -128,20 +149,33 @@ end
 
 if defined?(Rails)
 
+##
+#
   module Current
     attribute(:controller)
     attribute(:user)
+  end
 
+##
+#
+  module Current
     def Current.install_before_filter!
-      ::ActionController::Base.module_eval do
-        prepend_before_filter do |controller|
-          Current.clear
-          Current.controller = controller
+      if defined?(::ActionController::Base)
+        ::ActionController::Base.module_eval do
+          prepend_before_filter do |controller|
+            Current.clear
+            Current.controller = controller
+          end
+
+          include Current
+          helper{ include Current }
         end
-      end if defined?(::ActionController::Base)
+      end
     end
   end
 
+##
+#
   if defined?(Rails::Engine)
     class Engine < Rails::Engine
       config.before_initialize do
@@ -155,7 +189,6 @@ if defined?(Rails)
   end
 
 end
-
 
 ::Rails_current = ::Current
 

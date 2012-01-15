@@ -124,6 +124,21 @@ Testing Current do
 
 ##
 #
+  test 'that dynamically added data clears cleverly' do
+    assert{ Current.foo = 42 }
+    assert{ Current.bar{ 42.0 } }
+
+    assert{ Current.foo == 42 }
+    assert{ Current.bar == 42.0 }
+
+    assert{ Current.clear }
+
+    assert{ Current.foo == nil }
+    assert{ Current.bar == 42.0 }
+  end
+
+##
+#
   test 'that query methods on Current werky' do
     assert{ Current.foo?.nil? }
     assert{ Current.foo = 42 }
@@ -132,21 +147,48 @@ Testing Current do
 
 ##
 #
-  test 'that loading Current into a rails app creates Current.user and Current.controller' do
+  test 'that loading Current into an old skool rails app creates Current.user and Current.controller' do
     mock_rails! do
       assert{ Current.attributes =~ {:user => nil, :controller => nil} }
-    end
 
-    mock_rails_engine! do
-      assert{ Current.attributes =~ {:user => nil, :controller => nil} }
-      assert{ $before_initialize_called }
-      assert{ $before_filter_called }
+      assert do
+        Current.user = :user
+        Current.controller = :controller
+      end
+
+      assert{ ActionController::Base.new.current_user == :user }
+      assert{ ActionController::Base.new.current_controller == :controller }
+
+      assert{ ActionView::Base.new.current_user == :user }
+      assert{ ActionView::Base.new.current_controller == :controller }
     end
   end
 
 ##
 #
-  teardown do
+  test 'that loading Current into a new skool rails app creates Current.user and Current.controller' do
+    mock_rails_engine! do
+      assert{ Current.attributes =~ {:user => nil, :controller => nil} }
+
+      assert{ $before_initialize_called }
+      assert{ $prepend_before_filter_called }
+
+      assert do
+        Current.user = :user
+        Current.controller = :controller
+      end
+
+      assert{ ActionController::Base.new.current_user == :user }
+      assert{ ActionController::Base.new.current_controller == :controller }
+
+      assert{ ActionView::Base.new.current_user == :user }
+      assert{ ActionView::Base.new.current_controller == :controller }
+    end
+  end
+
+##
+#
+  setup do
     assert{ Current.reset }
   end
 
@@ -155,6 +197,25 @@ private
   def mock_rails!
     Object.module_eval <<-__
       module Rails
+      end
+
+      module ActionController
+        class Base
+          def Base.prepend_before_filter(*args, &block)
+            block.call
+          ensure
+            $prepend_before_filter_called = true
+          end
+
+          def Base.helper(&block)
+            ActionView::Base.module_eval(&block)
+          end
+        end
+      end
+
+      module ActionView
+        class Base
+        end
       end
     __
     $load.call()
@@ -182,11 +243,26 @@ private
 
       module ActionController
         class Base
-          def Base.before_filter(*args, &block)
-            block.call()
+          def Base.prepend_before_filter(*args, &block)
+            block.call
           ensure
-            $before_filter_called = true
+            $prepend_before_filter_called = true
           end
+
+          def Base.helper(&block)
+            ActionView::Base.module_eval(&block)
+          end
+        end
+      end
+
+      module ActionView
+        class Base
+        end
+      end
+
+      module ActiveSupport
+        def ActiveSupport.on_load(*args, &block)
+          block.call()
         end
       end
     __
