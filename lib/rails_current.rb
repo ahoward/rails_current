@@ -4,7 +4,7 @@ require 'map'
 
 module Current
   def Current.version
-    '1.4.0'
+    '1.4.1'
   end
 
   def Current.data
@@ -62,7 +62,7 @@ module Current
     unless respond_to?(name)
       singleton_class.module_eval do
         define_method(name) do
-          if data.has_key?(name)
+          if data.has_key?(name) and !data[name].nil?
             data[name]
           else
             if generator = generators[name]
