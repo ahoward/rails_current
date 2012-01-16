@@ -59,17 +59,16 @@ module Current
   end
 
   def Current.define_attribute_method(name)
+    name = name.to_s
     unless respond_to?(name)
       singleton_class.module_eval do
         define_method(name) do
-          if data.has_key?(name) and !data[name].nil?
-            data[name]
-          else
-            if generator = generators[name]
-              value = generator.call
-              data[name] = value
-            end
+          value = data[name]
+          if value.nil? and generator = generators[name]
+            value = generator.call
+            data[name] = value
           end
+          value
         end
 
         define_method(name + '=') do |value|
@@ -135,7 +134,8 @@ module Current
     case method.to_s
       when /^current_(.*)$/
         msg = $1
-        Current.send(msg, *args, &block)
+        value = Current.send(msg, *args, &block)
+
       else
         super
     end
@@ -145,7 +145,6 @@ end
 def Current(*args, &block)
   Current.attribute(*args, &block)
 end
-
 
 if defined?(Rails)
 
@@ -167,6 +166,7 @@ if defined?(Rails)
             Current.controller = controller
           end
 
+          extend Current
           include Current
           helper{ include Current }
         end
