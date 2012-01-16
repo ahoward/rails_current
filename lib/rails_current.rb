@@ -4,7 +4,7 @@ require 'map'
 
 module Current
   def Current.version
-    '1.4.1'
+    '1.5.0'
   end
 
   def Current.data
