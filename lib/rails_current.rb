@@ -4,7 +4,7 @@ require 'map'
 
 module Current
   def Current.version
-    '1.5.0'
+    '1.6.0'
   end
 
   def Current.data
@@ -138,6 +138,56 @@ module Current
 
       else
         super
+    end
+  end
+
+  def Current.mock_controller(options = {})
+    require 'rails'
+    require 'action_controller'
+    require 'action_dispatch/testing/test_request.rb' 
+    require 'action_dispatch/testing/test_response.rb' 
+
+    default_url_options =
+      begin
+        require 'rails_default_url_options'
+        DefaultUrlOptions
+      rescue LoadError
+        options[:default_url_options] || {}
+      end
+
+    ensure_rails_application do
+      store = ActiveSupport::Cache::MemoryStore.new 
+      controller =  
+        begin 
+          ApplicationController.new 
+        rescue NameError 
+          ActionController::Base.new 
+        end 
+      controller.perform_caching = true 
+      controller.cache_store = store 
+      request = ActionDispatch::TestRequest.new 
+      response = ActionDispatch::TestResponse.new 
+      controller.request = request 
+      controller.response = response 
+      #controller.send(:initialize_template_class, response) 
+      #controller.send(:assign_shortcuts, request, response) 
+      controller.send(:default_url_options).merge!(default_url_options)
+      controller
+    end
+  end 
+
+  def Current.ensure_rails_application(&block)
+    require 'rails' unless defined?(Rails)
+    if Rails.application.nil?
+      mock = Class.new(Rails::Application)
+      Rails.application = mock.instance
+      begin
+        block.call()
+      ensure
+        Rails.application = nil
+      end
+    else
+      block.call()
     end
   end
 end
