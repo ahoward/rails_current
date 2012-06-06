@@ -25,6 +25,8 @@ Gem::Specification::new do |spec|
   spec.test_files = nil
 
   
+    spec.add_dependency(*["map", " >= 6.0.1"])
+  
 
   spec.extensions.push(*[])
 

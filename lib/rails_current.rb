@@ -1,11 +1,27 @@
 # -*- encoding : utf-8 -*-
 
-require 'map'
-
 module Current
   def Current.version
     '1.6.0'
   end
+
+  def Current.dependencies
+    {
+      'map'           => [ 'map'           , ' >= 6.0.1' ]
+    }
+  end
+
+  begin
+    require 'rubygems'
+  rescue LoadError
+    nil
+  end
+
+  Current.dependencies.each do |lib, dependency|
+    gem(*dependency) if defined?(gem)
+    require(lib)
+  end
+
 
   def Current.data
     Thread.current[:current] ||= Map.new
