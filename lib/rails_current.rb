@@ -2,7 +2,7 @@
 
 module Current
   def Current.version
-    '1.6.0'
+    '1.6.1'
   end
 
   def Current.dependencies
