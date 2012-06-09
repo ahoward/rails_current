@@ -3,7 +3,7 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_current"
-  spec.version = "1.6.0"
+  spec.version = "1.6.2"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
   spec.description = "description: rails_current kicks the ass"

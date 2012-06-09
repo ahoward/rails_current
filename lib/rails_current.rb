@@ -2,7 +2,7 @@
 
 module Current
   def Current.version
-    '1.6.1'
+    '1.6.2'
   end
 
   def Current.dependencies
@@ -218,6 +218,7 @@ if defined?(Rails)
 #
   module Current
     attribute(:controller)
+    attribute(:action)
     attribute(:user)
   end
 
@@ -230,6 +231,7 @@ if defined?(Rails)
           prepend_before_filter do |controller|
             Current.clear
             Current.controller = controller
+            Current.action = controller.send(:action_name)
           end
 
           extend Current
