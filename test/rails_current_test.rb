@@ -147,9 +147,9 @@ Testing Current do
 
 ##
 #
-  test 'that loading Current into an old skool rails app creates Current.user and Current.controller' do
+  test 'that loading Current into an old skool rails app creates Current.user and Current.controller and Current.action' do
     mock_rails! do
-      assert{ Current.attributes =~ {:user => nil, :controller => nil} }
+      assert{ Current.attributes =~ {:user => nil, :controller => nil, :action => nil} }
 
       assert do
         Current.user = :user
@@ -168,7 +168,7 @@ Testing Current do
 #
   test 'that loading Current into a new skool rails app creates Current.user and Current.controller' do
     mock_rails_engine! do
-      assert{ Current.attributes =~ {:user => nil, :controller => nil} }
+      assert{ Current.attributes =~ {:user => nil, :controller => nil, :action => nil} }
 
       assert{ $before_initialize_called }
       assert{ $prepend_before_filter_called }

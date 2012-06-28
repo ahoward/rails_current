@@ -2,7 +2,7 @@
 
 module Current
   def Current.version
-    '1.6.2'
+    '1.7.0'
   end
 
   def Current.dependencies
@@ -21,7 +21,6 @@ module Current
     gem(*dependency) if defined?(gem)
     require(lib)
   end
-
 
   def Current.data
     Thread.current[:current] ||= Map.new
@@ -188,7 +187,7 @@ module Current
       #controller.send(:initialize_template_class, response) 
       #controller.send(:assign_shortcuts, request, response) 
       controller.send(:default_url_options).merge!(default_url_options)
-      controller
+      Current.proxy_for(controller)
     end
   end 
 
@@ -205,6 +204,24 @@ module Current
     else
       block.call()
     end
+  end
+
+  class BlankSlate
+    instance_methods.each{|m| undef_method(m) unless m.to_s =~ /^__|object_id/}
+  end
+
+  class Proxy < BlankSlate
+    def initialize(object)
+      @object = object
+    end
+
+    def method_missing(method, *args, &block)
+      @object.__send__(method, *args, &block)
+    end
+  end
+
+  def Current.proxy_for(object)
+    Proxy.new(object)
   end
 end
 
@@ -230,8 +247,8 @@ if defined?(Rails)
         ::ActionController::Base.module_eval do
           prepend_before_filter do |controller|
             Current.clear
-            Current.controller = controller
-            Current.action = controller.send(:action_name)
+            Current.controller = Current.proxy_for(controller)
+            Current.action = controller ? controller.send(:action_name) : nil
           end
 
           extend Current
