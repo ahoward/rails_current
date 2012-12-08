@@ -1,16 +1,7 @@
-This.name =
-  "View"
-
-This.synopsis =
-  "View.render(:template => 'shared/view', :locals => {:key => :val})"
-
 This.rubyforge_project = 'codeforpeople'
-This.author            = "Ara T. Howard"
-This.email             = "ara.t.howard@gmail.com"
-This.homepage          = "https://github.com/ahoward/#{ This.lib }"
-
-This.setup!
-
+This.author = "Ara T. Howard"
+This.email = "ara.t.howard@gmail.com"
+This.homepage = "https://github.com/ahoward/#{ This.lib }"
 
 
 task :default do
@@ -18,16 +9,16 @@ task :default do
 end
 
 task :test do
-  This.run_tests!
+  run_tests!
 end
 
 namespace :test do
-  task(:unit){ This.run_tests!(:unit) }
-  task(:functional){ This.run_tests!(:functional) }
-  task(:integration){ This.run_tests!(:integration) }
+  task(:unit){ run_tests!(:unit) }
+  task(:functional){ run_tests!(:functional) }
+  task(:integration){ run_tests!(:integration) }
 end
 
-def This.run_tests!(which = nil)
+def run_tests!(which = nil)
   which ||= '**'
   test_dir = File.join(This.dir, "test")
   test_glob ||= File.join(test_dir, "#{ which }/**_test.rb")
@@ -41,25 +32,25 @@ def This.run_tests!(which = nil)
     command = "#{ File.basename(This.ruby) } -I ./lib -I ./test/lib #{ test_rb }"
 
     puts
-    This.say(div, :color => :cyan, :bold => true)
-    This.say("@#{ testno } => ", :bold => true, :method => :print)
-    This.say(command, :color => :cyan, :bold => true)
-    This.say(line, :color => :cyan, :bold => true)
+    say(div, :color => :cyan, :bold => true)
+    say("@#{ testno } => ", :bold => true, :method => :print)
+    say(command, :color => :cyan, :bold => true)
+    say(line, :color => :cyan, :bold => true)
 
     system(command)
 
-    This.say(line, :color => :cyan, :bold => true)
+    say(line, :color => :cyan, :bold => true)
 
     status = $?.exitstatus
 
     if status.zero? 
-      This.say("@#{ testno } <= ", :bold => true, :color => :white, :method => :print)
-      This.say("SUCCESS", :color => :green, :bold => true)
+      say("@#{ testno } <= ", :bold => true, :color => :white, :method => :print)
+      say("SUCCESS", :color => :green, :bold => true)
     else
-      This.say("@#{ testno } <= ", :bold => true, :color => :white, :method => :print)
-      This.say("FAILURE", :color => :red, :bold => true)
+      say("@#{ testno } <= ", :bold => true, :color => :white, :method => :print)
+      say("FAILURE", :color => :red, :bold => true)
     end
-    This.say(line, :color => :cyan, :bold => true)
+    say(line, :color => :cyan, :bold => true)
 
     exit(status) unless status.zero?
   end
@@ -68,8 +59,8 @@ end
 
 task :gemspec do
   ignore_extensions = ['git', 'svn', 'tmp', /sw./, 'bak', 'gem']
-  ignore_directories = ['pkg', 'db']
-  ignore_files = ['test/log', 'test/db.yml', 'a.rb', 'b.rb'] + Dir['db/*'] + %w'db'
+  ignore_directories = ['pkg']
+  ignore_files = ['test/log', 'a.rb'] + Dir['db/*'] + %w'db'
 
   shiteless = 
     lambda do |list|
@@ -97,8 +88,8 @@ task :gemspec do
   executables = shiteless[Dir::glob("bin/*")].map{|exe| File.basename(exe)}
   #has_rdoc    = true #File.exist?('doc')
   test_files  = test(?e, "test/#{ lib }.rb") ? "test/#{ lib }.rb" : nil
-  summary     = This.summary || This.synopsis || "#{ lib } kicks the ass"
-  description = This.description || summary
+  summary     = object.respond_to?(:summary) ? object.summary : "summary: #{ lib } kicks the ass"
+  description = object.respond_to?(:description) ? object.description : "description: #{ lib } kicks the ass"
 
   if This.extensions.nil?
     This.extensions = []
@@ -123,9 +114,9 @@ task :gemspec do
 
   template = 
     if test(?e, 'gemspec.erb')
-      This.template_for{ IO.read('gemspec.erb') }
+      Template{ IO.read('gemspec.erb') }
     else
-      This.template_for {
+      Template {
         <<-__
           ## <%= lib %>.gemspec
           #
@@ -159,20 +150,20 @@ task :gemspec do
       }
     end
 
-  FileUtils.mkdir_p(This.pkgdir)
+  Fu.mkdir_p(This.pkgdir)
   gemspec = "#{ lib }.gemspec"
   open(gemspec, "w"){|fd| fd.puts(template)}
   This.gemspec = gemspec
 end
 
 task :gem => [:clean, :gemspec] do
-  FileUtils.mkdir_p(This.pkgdir)
+  Fu.mkdir_p(This.pkgdir)
   before = Dir['*.gem']
   cmd = "gem build #{ This.gemspec }"
   `#{ cmd }`
   after = Dir['*.gem']
   gem = ((after - before).first || after.first) or abort('no gem!')
-  FileUtils.mv(gem, This.pkgdir)
+  Fu.mv(gem, This.pkgdir)
   This.gem = File.join(This.pkgdir, File.basename(gem))
 end
 
@@ -186,21 +177,21 @@ task :readme do
     samples << "\n" << "  <========< #{ sample } >========>" << "\n\n"
 
     cmd = "cat #{ sample }"
-    samples << This.util.indent(prompt + cmd, 2) << "\n\n"
-    samples << This.util.indent(`#{ cmd }`, 4) << "\n"
+    samples << Util.indent(prompt + cmd, 2) << "\n\n"
+    samples << Util.indent(`#{ cmd }`, 4) << "\n"
 
     cmd = "ruby #{ sample }"
-    samples << This.util.indent(prompt + cmd, 2) << "\n\n"
+    samples << Util.indent(prompt + cmd, 2) << "\n\n"
 
     cmd = "ruby -e'STDOUT.sync=true; exec %(ruby -I ./lib #{ sample })'"
-    samples << This.util.indent(`#{ cmd } 2>&1`, 4) << "\n"
+    samples << Util.indent(`#{ cmd } 2>&1`, 4) << "\n"
   end
 
   template = 
     if test(?e, 'readme.erb')
-      This.template_for{ IO.read('readme.erb') }
+      Template{ IO.read('readme.erb') }
     else
-      This.template_for {
+      Template {
         <<-__
           NAME
             #{ lib }
@@ -221,7 +212,7 @@ end
 
 
 task :clean do
-  Dir[File.join(This.pkgdir, '**/**')].each{|entry| FileUtils.rm_rf(entry)}
+  Dir[File.join(This.pkgdir, '**/**')].each{|entry| Fu.rm_rf(entry)}
 end
 
 
@@ -236,11 +227,11 @@ task :release => [:clean, :gemspec, :gem] do
   system(cmd)
   abort("cmd(#{ cmd }) failed with (#{ $?.inspect })") unless $?.exitstatus.zero?
 
-  #cmd = "rubyforge login && rubyforge add_release #{ This.rubyforge_project } #{ This.lib } #{ This.version } #{ This.gem }"
-  #puts cmd
-  #puts
-  #system(cmd)
-  #abort("cmd(#{ cmd }) failed with (#{ $?.inspect })") unless $?.exitstatus.zero?
+  cmd = "rubyforge login && rubyforge add_release #{ This.rubyforge_project } #{ This.lib } #{ This.version } #{ This.gem }"
+  puts cmd
+  puts
+  system(cmd)
+  abort("cmd(#{ cmd }) failed with (#{ $?.inspect })") unless $?.exitstatus.zero?
 end
 
 
@@ -252,106 +243,66 @@ BEGIN {
 #
   $VERBOSE = nil
 
+  require 'ostruct'
   require 'erb'
   require 'fileutils'
   require 'rbconfig'
   require 'pp'
 
+# fu shortcut
+#
+  Fu = FileUtils
+
 # cache a bunch of stuff about this rakefile/environment
 #
-
-  This =
-    Class.new(Hash) do
-
-      def method_missing(method, *args, &block)
-        if method.to_s =~ /=/
-          key = method.to_s.chomp('=')
-          value = block ? block : args.shift
-          self[key] = value
-        else
-          key = method.to_s
-          if block
-            value = block
-            self[key] = value
-          else
-            value = self[key]
-
-            if value.respond_to?(:call)
-              self[key] = value.call()
-            else
-              value
-            end
-          end
-        end
-      end
-
-      def inspect
-        expand!
-        PP.pp(self, '')
-      end
-
-      def expand!
-        keys.each do |key|
-          value = self[key]
-          if value.respond_to?(:call)
-            self[key] = value.call()
-          end
-        end
-      end
-
-    end.new()
+  This = OpenStruct.new
 
   This.file = File.expand_path(__FILE__)
   This.dir = File.dirname(This.file)
   This.pkgdir = File.join(This.dir, 'pkg')
 
-# defaults 
+# grok lib
 #
-  This.lib do
-    File.basename(Dir.pwd)
+  lib = ENV['LIB']
+  unless lib
+    lib = File.basename(Dir.pwd).sub(/[-].*$/, '')
+  end
+  This.lib = lib
+
+# grok version
+#
+  version = ENV['VERSION']
+  unless version
+    require "./lib/#{ This.lib }"
+    This.name = lib.capitalize
+    This.object = eval(This.name)
+    version = This.object.send(:version)
+  end
+  This.version = version
+
+# see if dependencies are export by the module
+#
+  if This.object.respond_to?(:dependencies)
+    This.dependencies = This.object.dependencies
   end
 
-  def This.setup!
-    begin
-      require "./lib/#{ This.lib }"
-    rescue LoadError
-      abort("could not load #{ This.lib }")
-    end
-  end
+# we need to know the name of the lib an it's version
+#
+  abort('no lib') unless This.lib
+  abort('no version') unless This.version
 
-  This.name do
-    This.name = This.lib.capitalize
-  end
-
-  This.object do
-    begin
-      This.object = eval(This.name)
-    rescue Object
-      abort("could not determine object from #{ This.name }")
-    end
-  end
-
-  This.version do
-    This.object.send(:version)
-  end
-
-  This.dependencies do
-    if This.object.respond_to?(:dependencies)
-      This.object.dependencies
-    end
-  end
-
-  This.ruby do
-    c = Config::CONFIG
-    bindir = c["bindir"] || c['BINDIR']
-    ruby_install_name = c['ruby_install_name'] || c['RUBY_INSTALL_NAME'] || 'ruby'
-    ruby_ext = c['EXEEXT'] || ''
-    File.join(bindir, (ruby_install_name + ruby_ext))
-  end
+# discover full path to this ruby executable
+#
+  c = RbConfig::CONFIG
+  bindir = c["bindir"] || c['BINDIR']
+  ruby_install_name = c['ruby_install_name'] || c['RUBY_INSTALL_NAME'] || 'ruby'
+  ruby_ext = c['EXEEXT'] || ''
+  ruby = File.join(bindir, (ruby_install_name + ruby_ext))
+  This.ruby = ruby
 
 # some utils
 #
-  This.util = Module.new do
+  module Util
     def indent(s, n = 2)
       s = unindent(s)
       ws = ' ' * n
@@ -361,33 +312,27 @@ BEGIN {
     def unindent(s)
       indent = nil
       s.each_line do |line|
-        next if line =~ %r/^\s*$/
-        indent = line[%r/^\s*/] and break
-      end
-      indent ? s.gsub(%r/^#{ indent }/, "") : s
+      next if line =~ %r/^\s*$/
+      indent = line[%r/^\s*/] and break
     end
-
+    indent ? s.gsub(%r/^#{ indent }/, "") : s
+  end
     extend self
   end
 
 # template support
 #
-  This.template = Class.new do
+  class Template
     def initialize(&block)
       @block = block
       @template = block.call.to_s
     end
-
     def expand(b=nil)
-      ERB.new(This.util.unindent(@template)).result((b||@block).binding)
+      ERB.new(Util.unindent(@template)).result((b||@block).binding)
     end
-
     alias_method 'to_s', 'expand'
   end
-
-  def This.template_for(*args, &block)
-    This.template.new(*args, &block)
-  end
+  def Template(*args, &block) Template.new(*args, &block) end
 
 # colored console output support
 #
@@ -420,8 +365,7 @@ BEGIN {
     :on_cyan    => "\e[46m",
     :on_white   => "\e[47m"
   }
-
-  def This.say(something, *args)
+  def say(phrase, *args)
     options = args.last.is_a?(Hash) ? args.pop : {}
     options[:color] = args.shift.to_s.to_sym unless args.empty?
     keys = options.keys
@@ -430,7 +374,7 @@ BEGIN {
     color = options[:color]
     bold = options.has_key?(:bold)
 
-    parts = [something]
+    parts = [phrase]
     parts.unshift(This.ansi[color]) if color
     parts.unshift(This.ansi[:bold]) if bold
     parts.push(This.ansi[:clear]) if parts.size > 1
