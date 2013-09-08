@@ -2,7 +2,7 @@
 
 module Current
   def Current.version
-    '1.7.0'
+    '1.8.0'
   end
 
   def Current.dependencies
@@ -196,6 +196,9 @@ module Current
     if Rails.application.nil?
       mock = Class.new(Rails::Application)
       Rails.application = mock.instance
+      if defined?(Rails.application.config.secret_key_base)
+        Rails.application.config.secret_key_base = '42'
+      end
       begin
         block.call()
       ensure
