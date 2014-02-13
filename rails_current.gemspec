@@ -6,7 +6,7 @@ Gem::Specification::new do |spec|
   spec.version = "1.8.0"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
-  spec.description = "description: rails_current kicks the ass"
+  spec.description = "track current_STUFF mo betta"
 
   spec.files =
 ["README.md",
