@@ -2,13 +2,17 @@
 
 module Current
   def Current.version
-    '1.8.0'
+    '1.8.1'
   end
 
   def Current.dependencies
     {
       'map'           => [ 'map'           , ' >= 6.0.1' ]
     }
+  end
+
+  def Current.description
+    "track 'current_user' et all in a tidy, global, and thread-safe fashion for your rails apps"
   end
 
   begin

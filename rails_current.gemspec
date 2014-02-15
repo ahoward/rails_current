@@ -3,16 +3,18 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_current"
-  spec.version = "1.8.0"
+  spec.version = "1.8.1"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
-  spec.description = "description: rails_current kicks the ass"
+  spec.description = "track 'current_user' et all in a tidy, global, and thread-safe fashion for your rails apps"
+  spec.license = "same as ruby's"
 
   spec.files =
 ["README.md",
  "Rakefile",
  "lib",
  "lib/rails_current.rb",
+ "rails_current.gemspec",
  "test",
  "test/rails_current_test.rb",
  "test/testing.rb"]
@@ -23,9 +25,8 @@ Gem::Specification::new do |spec|
 
   spec.test_files = nil
 
-  
-    spec.add_dependency(*["map", " >= 6.0.1"])
-  
+### spec.add_dependency 'lib', '>= version'
+#### spec.add_dependency 'map'
 
   spec.extensions.push(*[])
 
