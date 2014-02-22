@@ -3,7 +3,7 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_current"
-  spec.version = "1.8.1"
+  spec.version = "1.8.2"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
   spec.description = "track 'current_user' et all in a tidy, global, and thread-safe fashion for your rails apps"
@@ -25,8 +25,9 @@ Gem::Specification::new do |spec|
 
   spec.test_files = nil
 
-### spec.add_dependency 'lib', '>= version'
-#### spec.add_dependency 'map'
+  
+    spec.add_dependency(*["map", " >= 6.0.1"])
+  
 
   spec.extensions.push(*[])
 
