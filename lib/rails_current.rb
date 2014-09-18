@@ -2,7 +2,7 @@
 
 module Current
   def Current.version
-    '1.8.2'
+    '1.9.0'
   end
 
   def Current.dependencies
@@ -176,12 +176,7 @@ module Current
 
     ensure_rails_application do
       store = ActiveSupport::Cache::MemoryStore.new 
-      controller =  
-        begin 
-          ApplicationController.new 
-        rescue NameError 
-          ActionController::Base.new 
-        end 
+      controller = mock_controller_class.new
       controller.perform_caching = true 
       controller.cache_store = store 
       request = ActionDispatch::TestRequest.new 
@@ -194,6 +189,19 @@ module Current
       Current.proxy_for(controller)
     end
   end 
+
+  def Current.mock_controller_class
+    unless const_defind?(:Controller)
+      controller_class =
+        if defined?(::ApplicationController)
+          Class.new(::ApplicationController)
+        else
+          Class.new(::ActionController::Base)
+        end
+      const_set(:Controller, controller_class)
+    end
+    return const_get(:Controller)
+  end
 
   def Current.ensure_rails_application(&block)
     require 'rails' unless defined?(Rails)

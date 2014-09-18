@@ -3,7 +3,7 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_current"
-  spec.version = "1.8.2"
+  spec.version = "1.9.0"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
   spec.description = "track 'current_user' et all in a tidy, global, and thread-safe fashion for your rails apps"
