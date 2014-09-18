@@ -161,31 +161,36 @@ module Current
   end
 
   def Current.mock_controller(options = {})
-    require 'rails'
-    require 'action_controller'
-    require 'action_dispatch/testing/test_request.rb' 
-    require 'action_dispatch/testing/test_response.rb' 
+    ensure_rails_application do
+      require 'action_controller'
+      require 'action_dispatch/testing/test_request.rb'
+      require 'action_dispatch/testing/test_response.rb'
 
-    default_url_options =
-      begin
-        require 'rails_default_url_options'
-        DefaultUrlOptions
-      rescue LoadError
-        options[:default_url_options] || {}
+      store = ActiveSupport::Cache::MemoryStore.new
+
+      controller = mock_controller_class.new
+      controller.perform_caching = true
+      controller.cache_store = store
+
+      request = ActionDispatch::TestRequest.new
+      response = ActionDispatch::TestResponse.new
+
+      controller.request = request
+      controller.response = response
+
+      singleton_class =
+        class << controller
+          self
+        end
+
+      singleton_class.module_eval do
+        define_method(:default_url_options) do
+          @default_url_options ||= (
+            defined?(DefaultUrlOptions) ? DefaultUrlOptions.dup : {}
+          )
+        end
       end
 
-    ensure_rails_application do
-      store = ActiveSupport::Cache::MemoryStore.new 
-      controller = mock_controller_class.new
-      controller.perform_caching = true 
-      controller.cache_store = store 
-      request = ActionDispatch::TestRequest.new 
-      response = ActionDispatch::TestResponse.new 
-      controller.request = request 
-      controller.response = response 
-      #controller.send(:initialize_template_class, response) 
-      #controller.send(:assign_shortcuts, request, response) 
-      controller.send(:default_url_options).merge!(default_url_options)
       Current.proxy_for(controller)
     end
   end 
