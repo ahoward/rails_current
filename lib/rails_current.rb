@@ -191,7 +191,7 @@ module Current
   end 
 
   def Current.mock_controller_class
-    unless const_defind?(:Controller)
+    unless const_defined?(:Controller)
       controller_class =
         if defined?(::ApplicationController)
           Class.new(::ApplicationController)
