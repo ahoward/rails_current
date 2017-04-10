@@ -172,8 +172,8 @@ module Current
       controller.perform_caching = true
       controller.cache_store = store
 
-      request = ActionDispatch::TestRequest.new
-      response = ActionDispatch::TestResponse.new
+      request = ActionDispatch::TestRequest.create({})
+      response = ActionDispatch::TestResponse.create({})
 
       controller.request = request
       controller.response = response
