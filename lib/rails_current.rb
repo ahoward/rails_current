@@ -2,7 +2,7 @@
 
 module Current
   def Current.version
-    '1.9.0'
+    '1.9.1'
   end
 
   def Current.dependencies
@@ -172,8 +172,8 @@ module Current
       controller.perform_caching = true
       controller.cache_store = store
 
-      request = ActionDispatch::TestRequest.new
-      response = ActionDispatch::TestResponse.new
+      request = ActionDispatch::TestRequest.create({})
+      response = ActionDispatch::TestResponse.create({})
 
       controller.request = request
       controller.response = response

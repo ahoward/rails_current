@@ -3,14 +3,16 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_current"
-  spec.version = "1.9.0"
+  spec.version = "1.9.1"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
   spec.description = "track 'current_user' et all in a tidy, global, and thread-safe fashion for your rails apps"
   spec.license = "same as ruby's"
 
   spec.files =
-["README.md",
+["Gemfile",
+ "Gemfile.lock",
+ "README.md",
  "Rakefile",
  "lib",
  "lib/rails_current.rb",
