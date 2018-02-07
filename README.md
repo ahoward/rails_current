@@ -1,38 +1,29 @@
---------------------------------
-NAME
---------------------------------
-  rails_current
+# rails_current
 
---------------------------------
-DESCRIPTION
---------------------------------
+## DESCRIPTION
 
-  track 'current_user' et all in a tidy, global, and thread-safe fashion.
+track `current_user` et all in a tidy, global, and thread-safe fashion.
 
 
---------------------------------
-SYNOPSIS
---------------------------------
+## SYNOPSIS
 
-  most rails apps scatter a bunch of @current_foobar vars everywhere.  don't do
-  that.  it's fugly.  instead, do this.
+most rails apps scatter a bunch of `@current_foobar` vars everywhere. don't do that. it's fugly. instead, do this.
 
-  declare the current_XXX variables you'll want tracked.  you can pass a block
-  for lazy computation
+declare the `current_XXX` variables you'll want tracked. you can pass a block for lazy computation
 
-    class ApplicationController
+```
+class ApplicationController
 
-      Current(:user){ User.find session[:current_user }
-      Current(:account)
+  Current(:user){ User.find session[:current_user }
+  Current(:account)
 
-    end
+end
+```
 
-  you can now access the current state two ways
-  
+you can now access the current state two ways
 
-  1) globally from anywhere in your code base
-  
-
+* globally from anywhere in your code base
+    ```
     if Current.user
 
       ...
@@ -40,29 +31,29 @@ SYNOPSIS
     end
 
     Current.user = User.find(id)
+    ```
+* using the `current_` methods that are added by including the Current module
+  into any class (ActionController::Base and ActionView::Base automatically
+  include it)
+  ```
+  if current_user
 
-  2) or using the current_ methods that are added by including the Current
-  module into any class (ActionController::Base and ActionView::Base
-  automatically include it)
-  
+    ...
 
-    if current_user
+  end
 
-      ...
+  self.current_user = User.find(id)
+  ```
 
-    end
+the `Current` module is cleared out before every request and is thread safe.
 
-    self.current_user = User.find(id)
+## INSTALL
 
-
-  the Current module is cleared out before every request and is thread safe.
-
---------------------------------
-INSTALL
---------------------------------
-
-   gem install rails-current
+```
+gem install rails_current
 
 
-   gem 'rails-current', :require => 'current'
-   bundle install
+gem 'rails-current', :require => 'current'
+bundle install
+```
+
