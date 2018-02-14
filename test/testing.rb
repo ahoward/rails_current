@@ -1,16 +1,8 @@
 # -*- encoding : utf-8 -*-
-#
-require 'test/unit'
-
-testdir = File.expand_path(File.dirname(__FILE__))
-rootdir = File.dirname(testdir)
-libdir = File.join(rootdir, 'lib')
-
-STDOUT.sync = true
-
-$:.unshift(testdir) unless $:.include?(testdir)
-$:.unshift(libdir) unless $:.include?(libdir)
-$:.unshift(rootdir) unless $:.include?(rootdir)
+gem 'minitest'
+require 'minitest/autorun'
+require 'minitest/pride'
+require 'rails_current'
 
 class Testing
   class Slug < ::String
@@ -37,7 +29,7 @@ class Testing
 end
 
 def Testing(*args, &block)
-  Class.new(::Test::Unit::TestCase) do
+  Class.new(::Minitest::Test) do
 
   ## class methods
   #
@@ -103,6 +95,35 @@ def Testing(*args, &block)
         @cleanup.push(block) if block
         @cleanup
       end
+
+    end
+
+    def assert_nothing_raised(*args, &block )
+      if Module === args.last
+        msg = nil
+      else
+        msg = args.pop
+      end
+      begin
+        line = __LINE__; yield
+      rescue MiniTest::Skip
+        raise
+      rescue Exception => e
+        bt = e.backtrace
+        as = e.instance_of?(MiniTest::Assertion)
+        if as
+          ans = /\A#{Regexp.quote(__FILE__)}:#{line}:in /o
+          bt.reject! {|ln| ans =~ ln}
+        end
+        if ((args.empty? && !as) ||
+            args.any? {|a| a.instance_of?(Module) ? e.is_a?(a) : e.class == a })
+          msg = message(msg) { "Exception raised:\n<#{mu_pp(e)}>" }
+          raise MiniTest::Assertion, msg.call, bt
+        else
+          raise
+        end
+      end
+      nil
     end
 
   ## configure the subclass!
@@ -124,7 +145,7 @@ def Testing(*args, &block)
         expected = getopt(:expected, options){ missing }
         actual = getopt(:actual, options){ missing }
         if expected == missing and actual == missing
-          actual, expected, *ignored = options.to_a.flatten
+          actual, expected, *_ = options.to_a.flatten
         end
         expected = expected.call() if expected.respond_to?(:call)
         actual = actual.call() if actual.respond_to?(:call)
@@ -183,15 +204,4 @@ def Testing(*args, &block)
 
     self
   end
-end
-
-
-if $0 == __FILE__
-
-  Testing 'Testing' do
-    testing('foo'){ assert true }
-    test{ assert true }
-    p instance_methods.grep(/test/)
-  end
-
 end

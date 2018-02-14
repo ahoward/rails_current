@@ -1,8 +1,9 @@
 # -*- encoding : utf-8 -*-
 
 module Current
+  VERSION = '2.0.0'
   def Current.version
-    '1.9.0'
+    VERSION
   end
 
   def Current.dependencies
@@ -153,8 +154,7 @@ module Current
     case method.to_s
       when /^current_(.*)$/
         msg = $1
-        value = Current.send(msg, *args, &block)
-
+        Current.send(msg, *args, &block)
       else
         super
     end
@@ -172,8 +172,8 @@ module Current
       controller.perform_caching = true
       controller.cache_store = store
 
-      request = ActionDispatch::TestRequest.new
-      response = ActionDispatch::TestResponse.new
+      request = ActionDispatch::TestRequest.create({})
+      response = ActionDispatch::TestResponse.create({})
 
       controller.request = request
       controller.response = response
@@ -245,10 +245,6 @@ module Current
   end
 end
 
-def Current(*args, &block)
-  Current.attribute(*args, &block)
-end
-
 if defined?(Rails)
 
 ##
@@ -262,10 +258,10 @@ if defined?(Rails)
 ##
 #
   module Current
-    def Current.install_before_filter!
+    def Current.install_before_action!
       if defined?(::ActionController::Base)
         ::ActionController::Base.module_eval do
-          prepend_before_filter do |controller|
+          prepend_before_action do |controller|
             Current.clear
             Current.controller = Current.proxy_for(controller)
             Current.action = controller ? controller.send(:action_name) : nil
@@ -285,12 +281,12 @@ if defined?(Rails)
     class Engine < Rails::Engine
       config.before_initialize do
         ActiveSupport.on_load(:action_controller) do
-          Current.install_before_filter!
+          Current.install_before_action!
         end
       end
     end
   else
-    Current.install_before_filter!
+    Current.install_before_action!
   end
 
 end

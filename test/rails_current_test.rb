@@ -1,3 +1,4 @@
+require 'testing'
 
 Testing Current do
 
@@ -42,7 +43,7 @@ Testing Current do
     wa = Queue.new
     wb = Queue.new
 
-    a = Thread.new do
+    Thread.new do
       Thread.current.abort_on_exception = true
       id = Thread.current.object_id
       Current.foo = 40
@@ -52,7 +53,7 @@ Testing Current do
       ra.push( Current.attributes )
     end
 
-    b = Thread.new do
+    Thread.new do
       Thread.current.abort_on_exception = true
       id = Thread.current.object_id
       Current.foo = 'forty'
@@ -94,7 +95,7 @@ Testing Current do
     assert{ c.current_bar == 42.0 }
 
     o = assert do
-      Object.new.tap{|o| o.extend Current }
+      Object.new.tap{|o1| o1.extend Current }
     end
 
     assert{ o.current_foo == 42 }
@@ -171,7 +172,7 @@ Testing Current do
       assert{ Current.attributes =~ {:user => nil, :controller => nil, :action => nil} }
 
       assert{ $before_initialize_called }
-      assert{ $prepend_before_filter_called }
+      assert{ $prepend_before_action_called }
 
       assert do
         Current.user = :user
@@ -201,10 +202,10 @@ private
 
       module ActionController
         class Base
-          def Base.prepend_before_filter(*args, &block)
+          def Base.prepend_before_action(*args, &block)
             block.call
           ensure
-            $prepend_before_filter_called = true
+            $prepend_before_action_called = true
           end
 
           def Base.helper(&block)
@@ -243,10 +244,10 @@ private
 
       module ActionController
         class Base
-          def Base.prepend_before_filter(*args, &block)
+          def Base.prepend_before_action(*args, &block)
             block.call
           ensure
-            $prepend_before_filter_called = true
+            $prepend_before_action_called = true
           end
 
           def Base.helper(&block)
@@ -271,7 +272,6 @@ private
     Object.send(:remove_const, :Rails)
   end
 end
-
 
 BEGIN {
   $this = File.expand_path(__FILE__)
