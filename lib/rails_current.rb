@@ -1,7 +1,7 @@
 # -*- encoding : utf-8 -*-
 
 module Current
-  VERSION = '2.1.0'
+  VERSION = '2.2.0'
 
   def Current.version
     VERSION
