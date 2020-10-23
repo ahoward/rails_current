@@ -1,6 +1,4 @@
-require 'testing'
-
-Testing Current do
+Testing.test Current do
 
 ##
 #
@@ -197,6 +195,10 @@ Testing Current do
 private
   def mock_rails!
     Object.module_eval <<-__
+      remove_const :Rails if const_defined? :Rails
+      remove_const :ActionController if const_defined? :ActionController
+      remove_const :ActionView if const_defined? :ActionView
+
       module Rails
       end
 

@@ -1,14 +1,15 @@
 # -*- encoding : utf-8 -*-
 
 module Current
-  VERSION = '2.0.0'
+  VERSION = '2.1.0'
+
   def Current.version
     VERSION
   end
 
   def Current.dependencies
     {
-      'map'           => [ 'map'           , ' >= 6.0.1' ]
+      'map' => [ 'map', ' ~> 6.0' ]
     }
   end
 
@@ -172,8 +173,8 @@ module Current
       controller.perform_caching = true
       controller.cache_store = store
 
-      request = ActionDispatch::TestRequest.create({})
-      response = ActionDispatch::TestResponse.create({})
+      request = ActionDispatch::TestRequest.create
+      response = ActionDispatch::TestResponse.create
 
       controller.request = request
       controller.response = response

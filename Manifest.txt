@@ -1,8 +1,0 @@
-Manifest.txt
-README.md
-Rakefile
-lib/rails_current.rb
-tasks/default.rake
-tasks/this.rb
-test/rails_current_test.rb
-test/testing.rb

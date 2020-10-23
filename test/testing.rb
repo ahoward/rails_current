@@ -2,7 +2,11 @@
 gem 'minitest'
 require 'minitest/autorun'
 require 'minitest/pride'
-require 'rails_current'
+
+
+if defined?(Testing)
+  Object.send(:remove_const, :Testing)
+end
 
 class Testing
   class Slug < ::String
@@ -28,7 +32,7 @@ class Testing
   end
 end
 
-def Testing(*args, &block)
+def Testing.test(*args, &block)
   Class.new(::Minitest::Test) do
 
   ## class methods

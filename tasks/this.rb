@@ -135,8 +135,8 @@ class ThisProject
       spec.email       = email
       spec.homepage    = homepage
 
-      spec.summary     = summary
-      spec.description = description
+      spec.summary     = summary 
+      spec.description = description == summary ? "#{ description} " : description
       spec.license     = license
 
       spec.files       = manifest

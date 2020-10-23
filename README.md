@@ -54,6 +54,7 @@ gem install rails_current
 
 
 gem 'rails-current', :require => 'current'
+
 bundle install
 ```
 
