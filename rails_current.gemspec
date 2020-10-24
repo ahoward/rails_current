@@ -3,17 +3,19 @@
 
 Gem::Specification::new do |spec|
   spec.name = "rails_current"
-  spec.version = "2.2.0"
+  spec.version = "2.2.1"
   spec.platform = Gem::Platform::RUBY
   spec.summary = "rails_current"
-  spec.description = "track 'current_user' et all in a tidy, global, and thread-safe fashion for your rails apps"
+  spec.description = "description: rails_current kicks the ass"
   spec.license = "Ruby"
 
   spec.files =
 ["README.md",
  "Rakefile",
  "lib",
+ "lib/rails_current",
  "lib/rails_current.rb",
+ "lib/rails_current/_lib.rb",
  "rails_current.gemspec",
  "tasks",
  "tasks/default.rake",
@@ -29,7 +31,7 @@ Gem::Specification::new do |spec|
   spec.test_files = nil
 
   
-    spec.add_dependency(*["map", " ~> 6.0"])
+    spec.add_dependency(*["map", " ~> 6"])
   
 
   spec.extensions.push(*[])

@@ -228,6 +228,11 @@ private
 
   def mock_rails_engine!
     Object.module_eval <<-__
+      remove_const :Rails if const_defined? :Rails
+      remove_const :ActionController if const_defined? :ActionController
+      remove_const :ActionView if const_defined? :ActionView
+      remove_const :ActiveSupport if const_defined? :ActiveSupport
+
       module Rails
         class Engine
           def Engine.config

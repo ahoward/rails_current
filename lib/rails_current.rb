@@ -1,32 +1,10 @@
 # -*- encoding : utf-8 -*-
 
 module Current
-  VERSION = '2.2.0'
-
-  def Current.version
-    VERSION
-  end
-
-  def Current.dependencies
-    {
-      'map' => [ 'map', ' ~> 6.0' ]
-    }
-  end
-
-  def Current.description
-    "track 'current_user' et all in a tidy, global, and thread-safe fashion for your rails apps"
-  end
-
-  begin
-    require 'rubygems'
-  rescue LoadError
-    nil
-  end
-
-  Current.dependencies.each do |lib, dependency|
-    gem(*dependency) if defined?(gem)
-    require(lib)
-  end
+  _libdir = __FILE__.sub(%r`\.rb\z`, '')
+  _lib  = "#{ _libdir }/_lib.rb"
+  Kernel.load(_lib)
+  Current.load_dependencies!
 
   def Current.data
     Thread.current[:current] ||= Map.new

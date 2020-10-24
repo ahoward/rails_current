@@ -1,4 +1,3 @@
-#This.rubyforge_project = 'codeforpeople'
 This.author = "Ara T. Howard"
 This.email = "ara.t.howard@gmail.com"
 This.homepage = "https://github.com/ahoward/#{ This.lib }"
@@ -213,11 +212,9 @@ task :readme do
   open("README", "w"){|fd| fd.puts template}
 end
 
-
 task :clean do
   Dir[File.join(This.pkgdir, '**/**')].each{|entry| Fu.rm_rf(entry)}
 end
-
 
 task :release => [:clean, :gemspec, :gem] do
   gems = Dir[File.join(This.pkgdir, '*.gem')].flatten
@@ -225,12 +222,6 @@ task :release => [:clean, :gemspec, :gem] do
   raise "no gems?" if gems.size < 1
 
   cmd = "gem push #{ This.gem }"
-  puts cmd
-  puts
-  system(cmd)
-  abort("cmd(#{ cmd }) failed with (#{ $?.inspect })") unless $?.exitstatus.zero?
-
-  cmd = "rubyforge login && rubyforge add_release #{ This.rubyforge_project } #{ This.lib } #{ This.version } #{ This.gem }"
   puts cmd
   puts
   system(cmd)
@@ -263,36 +254,40 @@ BEGIN {
   This.file = File.expand_path(__FILE__)
   This.dir = File.dirname(This.file)
   This.pkgdir = File.join(This.dir, 'pkg')
+  This.lib = File.basename(Dir.pwd).sub(/[-].*$/, '')
 
-# grok lib
+# load _lib
 #
-  lib = ENV['LIB']
-  unless lib
-    lib = File.basename(Dir.pwd).sub(/[-].*$/, '')
-  end
-  This.lib = lib
+  This._lib = "./lib/#{ This.lib }/_lib.rb"
+  require This._lib
 
-# grok version
+# extract name from _lib
 #
-  version = ENV['VERSION']
-  unless version
-    require "./lib/#{ This.lib }"
-    This.name = lib.capitalize
-    This.object = eval(This.name)
-    version = This.object.send(:version)
+  lines = IO.binread(This._lib).split("\n")
+  re = %r`\A \s* (module|class) \s+ ([^\s]+) \s* \z`iomx
+  name = nil
+  lines.each do |line|
+    match = line.match(re)
+    if match
+      name = match.to_a.last
+      break
+    end
   end
+  unless name
+    abort "could not extract `name` from #{ This._lib }"
+  end
+  This.name = name
+
+# now, fully grok This 
+#
+  This.object = eval(This.name)
+
+  version = This.object.send(:version)
   This.version = version
 
-# see if dependencies are export by the module
-#
   if This.object.respond_to?(:dependencies)
     This.dependencies = This.object.dependencies
   end
-
-# we need to know the name of the lib an it's version
-#
-  abort('no lib') unless This.lib
-  abort('no version') unless This.version
 
 # discover full path to this ruby executable
 #
